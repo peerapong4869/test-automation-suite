@@ -28,3 +28,16 @@ jobs:
       with:
         name: robot-test-results
         path: results/
+
+    - name: Send notification to Slack
+      if: always() # แจ้งเตือนเสมอไม่ว่าผลลัพธ์สำเร็จหรือล้มเหลว
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_MESSAGE: |
+          :robot_face: **GitHub Actions Notification**
+          Workflow: ${{ github.workflow }}
+          Status: ${{ job.status }}
+          Commit: ${{ github.sha }}
+          Repo: ${{ github.repository }}
+        SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
