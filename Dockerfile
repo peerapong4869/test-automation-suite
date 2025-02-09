@@ -3,6 +3,7 @@ FROM python:3.10-slim
 
 # ติดตั้ง Robot Framework และไลบรารีที่ต้องการ
 RUN pip install --no-cache-dir robotframework robotframework-requests
+RUN pip install --no-cache-dir robotframework robotframework-SeleniumLibrary
 
 # สร้าง Working Directory
 WORKDIR /tests
