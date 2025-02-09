@@ -1,27 +1,27 @@
-name: Run Robot Framework in Docker
+name: Run Robot Framework Tests
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    container:
-      image: python:3.10-slim  # ใช้ Python Base Image โดยตรง
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install Chrome & WebDriver in Docker
+      - name: Install Chrome & WebDriver
         run: |
-          apt-get update
-          apt-get install -y chromium chromium-driver
-          echo "Chrome installed: $(chromium --version)"
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y chromium-chromedriver
+          echo "Chrome installed: $(google-chrome --version)"
           echo "Chromedriver installed: $(chromedriver --version)"
 
-      - name: Install Robot Framework
+      - name: Install Python & Robot Framework
         run: |
           pip install --no-cache-dir robotframework robotframework-requests robotframework-seleniumlibrary
 
