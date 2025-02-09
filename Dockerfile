@@ -1,24 +1,20 @@
 # ใช้ Python base image
 FROM python:3.10-slim
 
-# กำหนดเวอร์ชันของ Chrome และ ChromeDriver ที่ต้องการใช้
-ENV CHROME_VERSION=123.0.6312.45-1
-ENV CHROMEDRIVER_VERSION=123.0.6312.45
-
-# ติดตั้ง dependencies ที่จำเป็นสำหรับ Selenium
+# ติดตั้ง dependencies ที่จำเป็น
 RUN apt-get update && apt-get install -y \
     wget unzip curl gnupg2 ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# ติดตั้ง Google Chrome เวอร์ชันที่ต้องการ
-RUN curl -sSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable=${CHROME_VERSION} \
-    && rm -rf /var/lib/apt/lists/*
+# ดาวน์โหลดและติดตั้ง Google Chrome เวอร์ชันล่าสุดที่รองรับ
+RUN wget -q -O google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && dpkg -i google-chrome.deb || apt-get -fy install \
+    && rm google-chrome.deb
 
-# ติดตั้ง ChromeDriver ที่ตรงกับเวอร์ชันของ Google Chrome
-RUN wget -q https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip \
+# ดึงเวอร์ชันของ Google Chrome ที่ติดตั้งอยู่
+RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}') \
+    && CHROMEDRIVER_VERSION=$(curl -sSL "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION") \
+    && wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
     && unzip chromedriver_linux64.zip \
     && mv chromedriver /usr/bin/chromedriver \
     && chmod +x /usr/bin/chromedriver \
