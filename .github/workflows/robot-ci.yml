@@ -3,27 +3,41 @@ name: Run Robot Framework Tests
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Install Chrome & WebDriver
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-          sudo apt-get install -y chromium-chromedriver
-          echo "Chrome installed: $(google-chrome --version)"
-          echo "Chromedriver installed: $(chromedriver --version)"
+    - name: Set up Docker Environment
+      run: mkdir -p results
 
-      - name: Install Python & Robot Framework
-        run: |
-          pip install --no-cache-dir robotframework robotframework-requests robotframework-seleniumlibrary
+    - name: Build Docker Image
+      run: docker build -t robot-framework-test .
 
-      - name: Run Robot Framework Tests
-        run: robot --outputdir results tests/
+    - name: Run Robot Framework Tests
+      run: docker run --rm -v $(pwd)/results:/tests/results robot-framework-test
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: robot-test-results
+        path: results/
+
+    - name: Send notification to Slack
+      if: always() # แจ้งเตือนเสมอไม่ว่าผลลัพธ์สำเร็จหรือล้มเหลว
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_MESSAGE: |
+          :robot_face: **GitHub Actions Notification**
+          Workflow: ${{ github.workflow }}
+          Status: ${{ job.status }}
+          Commit: ${{ github.sha }}
+          Repo: ${{ github.repository }}
+        SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
