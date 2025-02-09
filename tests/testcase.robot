@@ -31,7 +31,7 @@ Login Test
     Login standard_user
     Close Browser
 
-Login Test
+Login Test2
     Open Web
     Login standard_user
     Close Browser
