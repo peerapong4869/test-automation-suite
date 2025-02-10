@@ -12,16 +12,19 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Set up Docker Environment
-      run: mkdir -p results
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
 
-    - name: Build Docker Image
-      run: docker build -t robot-framework-test .
-
+    - name: Install Dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
     - name: Run Robot Framework Tests
-      run: docker run --rm -v $(pwd)/results:/tests/results robot-framework-test
+      run: robot --outputdir results tests/
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
@@ -30,7 +33,7 @@ jobs:
         path: results/
 
     - name: Send notification to Slack
-      if: always() # แจ้งเตือนเสมอไม่ว่าผลลัพธ์สำเร็จหรือล้มเหลว
+      if: always()
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
