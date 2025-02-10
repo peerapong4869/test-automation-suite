@@ -29,12 +29,14 @@ jobs:
 
     - name: Extract Test Summary
       run: |
-        PASSED=$(grep -oP '(?<=pass=")[0-9]+' results/output.xml || echo "0")
-        FAILED=$(grep -oP '(?<=fail=")[0-9]+' results/output.xml || echo "0")
-        SKIPPED=$(grep -oP '(?<=skip=")[0-9]+' results/output.xml || echo "0")
+        sudo apt-get install -y libxml2-utils  # ติดตั้ง xmllint (เฉพาะ Linux)
+        PASSED=$(xmllint --xpath "string(//statistics/total/stat[@pass]/@pass)" results/output.xml || echo "0")
+        FAILED=$(xmllint --xpath "string(//statistics/total/stat[@fail]/@fail)" results/output.xml || echo "0")
+        SKIPPED=$(xmllint --xpath "string(//statistics/total/stat[@skip]/@skip)" results/output.xml || echo "0")
         echo "PASSED=$PASSED" >> $GITHUB_ENV
         echo "FAILED=$FAILED" >> $GITHUB_ENV
         echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
+
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
