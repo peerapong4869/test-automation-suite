@@ -12,29 +12,16 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
+    - name: Set up Docker Environment
+      run: mkdir -p results
 
-    - name: Install Dependencies
-      run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
+    - name: Build Docker Image
+      run: docker build -t robot-framework-test .
 
     - name: Run Robot Framework Tests
-      run: robot --outputdir results tests/
-
-    - name: Extract Test Summary
-      run: |
-        PASSED=$(grep -oP '(?<=pass=")[0-9]+' results/output.xml || echo "0")
-        FAILED=$(grep -oP '(?<=fail=")[0-9]+' results/output.xml || echo "0")
-        SKIPPED=$(grep -oP '(?<=skip=")[0-9]+' results/output.xml || echo "0")
-        echo "PASSED=$PASSED" >> $GITHUB_ENV
-        echo "FAILED=$FAILED" >> $GITHUB_ENV
-        echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
+      run: docker run --rm -v $(pwd)/results:/tests/results robot-framework-test
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
@@ -43,42 +30,14 @@ jobs:
         path: results/
 
     - name: Send notification to Slack
-      if: always()
+      if: always() # แจ้งเตือนเสมอไม่ว่าผลลัพธ์สำเร็จหรือล้มเหลว
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-        SLACK_USERNAME: "GitHub Actions 🤖"
-        SLACK_ICON_EMOJI: ":github:"
-        SLACK_PAYLOAD: >-
-          {
-            "blocks": [
-              {
-                "type": "header",
-                "text": {
-                  "type": "plain_text",
-                  "text": "🚀 Robot Framework Test Results",
-                  "emoji": true
-                }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": ":robot_face: *Workflow:* `${{ github.workflow }}`\n📌 *Status:* `${{ job.status }}`\n📂 *Repository:* `${{ github.repository }}`\n\n✅ *Passed:* `${{ env.PASSED }}`\n❌ *Failed:* `${{ env.FAILED }}`\n⚠️ *Skipped:* `${{ env.SKIPPED }}`"
-                }
-              },
-              {
-                "type": "divider"
-              },
-              {
-                "type": "context",
-                "elements": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "🕒 *Triggered by:* `${{ github.actor }}`  |  🖥 *Branch:* `${{ github.ref }}`"
-                  }
-                ]
-              }
-            ]
-          }
+        SLACK_MESSAGE: |
+          :robot_face: **GitHub Actions Notification**
+          Workflow: ${{ github.workflow }}
+          Status: ${{ job.status }}
+          Commit: ${{ github.sha }}
+          Repo: ${{ github.repository }}
         SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
