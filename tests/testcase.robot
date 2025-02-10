@@ -11,7 +11,9 @@ ${visual_user}                visual_user
 
 *** Keywords ***
 Open Web
-    Open Browser    https://www.saucedemo.com/    Chrome
+    ${chrome_options}=    Create List    --headless --disable-gpu
+    Open Browser    https://www.saucedemo.com/    browser=chrome    options=${chrome_options}
+
 
 Login standard_user
     Input Text    id=user-name    standard_user
