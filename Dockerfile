@@ -1,17 +1,17 @@
-# ใช้ Official Image ที่มี Chrome และ Selenium
+# ใช้ Robot Framework Base Image ที่มี Chrome & Selenium
 FROM ppodgorsek/robot-framework:latest
 
-# สร้าง Working Directory
-WORKDIR /tests
+# ตั้งค่า user เป็น root ชั่วคราวเพื่อให้ pip install ผ่าน
+USER root
+RUN pip install --no-cache-dir --user webdriver-manager --break-system-packages
+USER robot
 
-# คัดลอกไฟล์จาก Host ไปยัง Container
-COPY tests/ /tests
-
-# ใช้ WebDriver Manager ให้ ChromeDriver อัปเดตอัตโนมัติ
-RUN pip install --no-cache-dir webdriver-manager
-
-# กำหนด Environment Variable ให้ Chrome ใช้ Headless Mode
+# ตั้งค่าตัวแปรแวดล้อมให้ Chrome ใช้ Headless Mode
 ENV ROBOT_OPTIONS="--variable HEADLESS:True"
 
-# รัน Robot Framework
+# ตั้งค่า Working Directory
+WORKDIR /tests
+COPY tests/ /tests
+
+# รัน Robot Framework Tests
 CMD ["sh", "-c", "robot --outputdir /tests/results /tests"]
