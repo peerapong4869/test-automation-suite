@@ -12,18 +12,30 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Ensure Results Directory Exists
-      run: mkdir -p results
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
 
-    - name: Build Docker Image
-      run: docker build -t robot-framework-test .
+    - name: Install Dependencies
+      run: |
+        pip install --upgrade pip
+        pip install robotframework robotframework-seleniumlibrary webdriver-manager
+
+    - name: Install Google Chrome & ChromeDriver
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
+        wget https://chromedriver.storage.googleapis.com/${CHROME_VERSION}/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver
 
     - name: Run Robot Framework Tests
-      run: |
-        docker run --rm -v $(pwd)/results:/tests/results \
-        -e ROBOT_OPTIONS="--variable HEADLESS:True" robot-framework-test
+      run: robot --outputdir results tests/
 
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
@@ -32,7 +44,7 @@ jobs:
         path: results/
 
     - name: Send notification to Slack
-      if: always() && env.SLACK_WEBHOOK
+      if: always() # แจ้งเตือนเสมอไม่ว่าผลลัพธ์สำเร็จหรือล้มเหลว
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
