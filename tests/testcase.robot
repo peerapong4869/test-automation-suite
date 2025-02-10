@@ -14,6 +14,11 @@ Open Web
     ${chrome_options}=    Create List    --headless --disable-gpu
     Open Browser    https://www.saucedemo.com/    browser=chrome    options=${chrome_options}
 
+Open Google
+    ${chrome_options}=    Create List    --headless --disable-gpu
+    Open Browser    https://www.google.com    browser=chrome    options=${chrome_options}
+    Close Browser
+
 
 Login standard_user
     Input Text    id=user-name    standard_user
@@ -37,3 +42,6 @@ Login Test2s
     Open Web
     Login standard_user
     Close Browser
+
+Open
+    Open Google

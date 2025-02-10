@@ -22,13 +22,7 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install --upgrade pip
-        pip install robotframework robotframework-seleniumlibrary webdriver-manager
-
-    - name: Install Google Chrome & ChromeDriver
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
-        pip install --no-cache-dir webdriver-manager
+        pip install -r requirements.txt
 
     - name: Run Robot Framework Tests
       run: robot --outputdir results tests/
@@ -40,7 +34,7 @@ jobs:
         path: results/
 
     - name: Send notification to Slack
-      if: always() # แจ้งเตือนเสมอไม่ว่าผลลัพธ์สำเร็จหรือล้มเหลว
+      if: always()
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
