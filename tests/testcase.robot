@@ -11,12 +11,10 @@ ${visual_user}                visual_user
 
 *** Keywords ***
 Open Web
-    ${chrome_options}=    Create List    --headless --disable-gpu --no-sandbox --disable-dev-shm-usage
-    Open Browser    https://www.saucedemo.com/    browser=chrome    options=${chrome_options}
+    Open Browser    https://www.saucedemo.com/    chrome    options=add_argument("--headless")
 
 Open Google
-    ${chrome_options}=    Create List    --headless --disable-gpu --no-sandbox --disable-dev-shm-usage
-    Open Browser    https://www.google.com    browser=chrome    options=${chrome_options}
+    Open Browser    https://www.google.com    chrome    options=add_argument("--headless")
     Close Browser
 
 Login standard_user

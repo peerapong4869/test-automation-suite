@@ -3,7 +3,7 @@ name: Run Robot Framework Tests
 on:
   push:
     branches:
-      - master
+      - master    # หาก repository ของคุณใช้ branch main ให้เปลี่ยน 'master' เป็น 'main'
   pull_request:
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -23,12 +23,22 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
+        # ตรวจสอบให้แน่ใจว่าใน requirements.txt มี
+        # robotframework
+        # robotframework-seleniumlibrary
+        # webdriver_manager  (ถ้าคุณต้องการให้ช่วยจัดการ ChromeDriver)
+
+    # (Optional) ติดตั้ง Google Chrome ถ้าจำเป็น (Ubuntu runner มักมี Chrome อยู่แล้ว)
+    - name: Install Google Chrome
+      run: |
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
 
     - name: Run Robot Framework Tests
       run: robot --outputdir results tests/
 
     - name: Upload Test Results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: robot-test-results
         path: results/
