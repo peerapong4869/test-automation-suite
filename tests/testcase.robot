@@ -8,36 +8,38 @@ ${problem_user}               problem_user
 ${performance_glitch_user}    performance_glitch_user
 ${error_user}                 error_user
 ${visual_user}                visual_user
+${password}                   secret_sauce
 
 *** Keywords ***
 Open Web
     Open Browser    https://www.saucedemo.com/    chrome    options=add_argument("--headless")
 
-Open Google
-    Open Browser    https://www.google.com    chrome    options=add_argument("--headless")
-    Close Browser
-
-Login standard_user
-    Input Text    id=user-name    ${standard_user}
-    Input Text    id=password    secret_sauce
-    Click Button    id=login-button
-
-Login locked_out_user
-    Input Text    id=user-name    ${locked_out_user}
-    Input Text    id=password    secret_sauce
+Login
+    [Arguments]    ${UserName}    ${password}
+    Input Text    id=user-name    ${UserName}
+    Input Text    id=password    ${password}
     Click Button    id=login-button
 
 *** Test Cases ***
-Login Test
+Verify valid login
     Open Web
-    Login standard_user
+    Login    ${standard_user}    ${password}
+    Wait Until Page Contains    Swag Labs
     Close Browser
 
-Login Test2s
+Verify login User invalid 
     Open Web
-    Login locked_out_user
+    Login    ${standard_user}    1234
+    Wait Until Page Contains    Epic sadface: Username and password do not match any user in this service
     Close Browser
 
-Open
-    Open Google
+Verify login Password invalid
+    Open Web
+    Login    Peerapong    ${password}
+    Wait Until Page Contains    Epic sadface: Username and password do not match any user in this service
+    Close Browser
 
+Verify locked-out user login
+    Open Web
+    Login    ${locked_out_user}    ${password}
+    Close Browser
