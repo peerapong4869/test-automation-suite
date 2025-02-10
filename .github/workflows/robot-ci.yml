@@ -27,6 +27,15 @@ jobs:
     - name: Run Robot Framework Tests
       run: robot --outputdir results tests/
 
+    - name: Extract Test Summary
+      run: |
+        PASSED=$(grep -oP '(?<=pass=")[0-9]+' results/output.xml || echo "0")
+        FAILED=$(grep -oP '(?<=fail=")[0-9]+' results/output.xml || echo "0")
+        SKIPPED=$(grep -oP '(?<=skip=")[0-9]+' results/output.xml || echo "0")
+        echo "PASSED=$PASSED" >> $GITHUB_ENV
+        echo "FAILED=$FAILED" >> $GITHUB_ENV
+        echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
+
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
       with:
@@ -47,7 +56,7 @@ jobs:
                 "type": "header",
                 "text": {
                   "type": "plain_text",
-                  "text": "🚀 GitHub Actions Notification",
+                  "text": "🚀 Robot Framework Test Results",
                   "emoji": true
                 }
               },
@@ -55,7 +64,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": ":robot_face: *Workflow:* `${{ github.workflow }}`\n📌 *Status:* `${{ job.status }}`\n🔗 *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|`${{ github.sha }}`>\n📂 *Repository:* `${{ github.repository }}`"
+                  "text": ":robot_face: *Workflow:* `${{ github.workflow }}`\n📌 *Status:* `${{ job.status }}`\n🔗 *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|`${{ github.sha }}`>\n📂 *Repository:* `${{ github.repository }}`\n\n✅ *Passed:* `${{ env.PASSED }}`\n❌ *Failed:* `${{ env.FAILED }}`\n⚠️ *Skipped:* `${{ env.SKIPPED }}`"
                 }
               },
               {
