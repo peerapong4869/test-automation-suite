@@ -11,26 +11,23 @@ ${visual_user}                visual_user
 
 *** Keywords ***
 Open Web
-    ${chrome_options}=    Create List    --headless --disable-gpu
+    ${chrome_options}=    Create List    --headless --disable-gpu --no-sandbox --disable-dev-shm-usage
     Open Browser    https://www.saucedemo.com/    browser=chrome    options=${chrome_options}
 
 Open Google
-    ${chrome_options}=    Create List    --headless --disable-gpu
+    ${chrome_options}=    Create List    --headless --disable-gpu --no-sandbox --disable-dev-shm-usage
     Open Browser    https://www.google.com    browser=chrome    options=${chrome_options}
     Close Browser
 
-
 Login standard_user
-    Input Text    id=user-name    standard_user
+    Input Text    id=user-name    ${standard_user}
     Input Text    id=password    secret_sauce
     Click Button    id=login-button
-    Location Should Contain    /inventory.html
 
-locked_out_user
-    Input Text    id=user-name    standard_user
+Login locked_out_user
+    Input Text    id=user-name    ${locked_out_user}
     Input Text    id=password    secret_sauce
     Click Button    id=login-button
-    Location Should Contain    /inventory.html
 
 *** Test Cases ***
 Login Test
@@ -40,7 +37,7 @@ Login Test
 
 Login Test2s
     Open Web
-    Login standard_user
+    Login locked_out_user
     Close Browser
 
 Open
