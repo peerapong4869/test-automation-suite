@@ -104,31 +104,6 @@ TC-PLP-005 Verify add to cart from product page
     Capture Page Screenshot    Products_Add_prolduct.png
     Click Element    ${locator_btn_remove_item_details}
 
-TC-SC-001 Verify adding item to cart
-    Login    ${standard_user}    ${password}
-    Wait Until Page Contains    Products
-
-TC-SC-002 Verify removing item from cart
-    Login    ${standard_user}    ${password}
-
-TC-SC-003 Verify cart icon updates correctly
-    Login    ${standard_user}    ${password}
-
-TC-TP-001 Verify checkout with valid data
-    Login    ${standard_user}    ${password}
-
-TC-TP-002 Verify checkout with missing fields
-    Login    ${standard_user}    ${password}
-
-TC-TP-003 Verify user can cancel checkout
-    Login    ${standard_user}    ${password}
-
-TC-OC-001 Verify order completion
-    Login    ${standard_user}    ${password}
-
-TC-OC-002 Verify order reset after completion
-    Login    ${standard_user}    ${password}
-
 
 #1. การทดสอบหน้า Login
 TC_LOGIN_001 - Valid Login
@@ -147,30 +122,54 @@ TC_LOGIN_003 - Login ด้วย Username ว่าง
 # Test Step: ปล่อยช่อง username ว่าง, ป้อน password “secret_sauce”, คลิกปุ่ม Login
 # Expected: แสดงข้อความ “Username is required”
 
-TC_LOGIN_004 - ด้วย Password ว่าง
+TC_LOGIN_004 - Login ด้วย Password ว่าง
     Login    ${standard_user}    ${password}
 # Test Step: ป้อน username “standard_user”, ปล่อยช่อง password ว่าง, คลิกปุ่ม Login
 # Expected: แสดงข้อความ “Password is required”
 
-TC_LOGIN_005 - Login ด้วยผู้ใช้ที่ถูกล็อก (Locked Out User)
+TC_LOGIN_005 - Login with empty Username Password fields
+    Login    ${standard_user}    ${password}
+# แจ้งเตือนให้กรอก Username/Password
+
+TC_LOGIN_006 - Login with SQL Injection
+# กรอก ' OR '1'='1
+    Login    ${standard_user}    ${password}
+# ควรป้องกันการโจมตี
+
+TC_LOGIN_007 - Login with XSS Injection
+# กรอก <script>alert('XSS')</script>
+    Login    ${standard_user}    ${password}
+# ควรป้องกันการรันสคริปต์
+
+TC_LOGIN_008 - Password field masking
+    Login    ${standard_user}    ${password}
+# ตรวจสอบรหัสผ่านขณะพิมพ์	แสดง ******
+
+TC_LOGIN_009 - Login button disabled when fields are empty
+    Login    ${standard_user}    ${password}
+# ไม่กรอกข้อมูลแล้วตรวจสอบปุ่ม	ปุ่ม Login ควรเป็น disabled
+
+TC_LOGIN_010 - Login with special characters กรอก admin@!#$%^&*()
+    Login    ${standard_user}    ${password}
+# กรอก admin@!#$%^&*()	ควรไม่อนุญาต
+
+TC_LOGIN_011 - Verify case sensitivity in username Admin และ admin
+    Login    ${standard_user}    ${password}
+# ถ้า Case Sensitive ต้องแสดง error
+
+TC_LOGIN_012 - Verify user session persistence Login > Refresh หน้า
+    Login    ${standard_user}    ${password}
+# ยังคงอยู่ในระบบ
+
+TC_LOGIN_013 - Verify login after logout Login > Logout > Login
+    Login    ${standard_user}    ${password}
+# ควรเข้าใช้งานได้
+
+TC_LOGIN_014 - Login ด้วยผู้ใช้ที่ถูกล็อก (Locked Out User)
     Login    ${standard_user}    ${password}
 # Test Step: ป้อน username “locked_out_user”, ป้อน password “secret_sauce”, คลิกปุ่ม Login
 # Expected: แสดงข้อความ “Epic sadface: Sorry, this user has been locked out.”
 
-# Login with empty fields	ไม่กรอกข้อมูล	แจ้งเตือนให้กรอก Username/Password
-# 5.1	SQL Injection	Security	ควรป้องกันการโจมตี
-# 5.2	XSS Injection	Security	ควรป้องกันการรันสคริปต์
-# Password field masking	ตรวจสอบรหัสผ่านขณะพิมพ์	แสดง ******
-# Login button disabled when fields are empty	ไม่กรอกข้อมูลแล้วตรวจสอบปุ่ม	ปุ่ม Login ควรเป็น disabled
-# 1.7	Login with special characters	กรอก admin@!#$%^&*()	ควรไม่อนุญาต
-# 1.8	Login with SQL Injection	กรอก ' OR '1'='1	ควรไม่อนุญาต
-# 1.9	Login with JavaScript Injection	กรอก <script>alert('XSS')</script>	ควรไม่อนุญาต
-# 1.10	Verify case sensitivity in username	Admin และ admin	ถ้า Case Sensitive ต้องแสดง error
-# 1.11	Verify user session persistence	Login > Refresh หน้า	ยังคงอยู่ในระบบ
-# 1.12	Verify session timeout	Login > ปล่อย 30 นาที	ควร Logout อัตโนมัติ
-# 1.13	Verify login after logout	Login > Logout > Login ใหม่	ควรเข้าใช้งานได้
-# 1.14	Verify login across multiple devices	Login บนอุปกรณ์อื่น	ควร Login ได้โดยไม่มีปัญหา
-# 1.15	Verify incorrect password attempt lockout	กรอกรหัสผ่านผิด 5 ครั้ง	ระบบควรล็อกบัญชีชั่วคราว
 
 
 
@@ -219,28 +218,42 @@ TC_PRODUCT_PAGE_009 - Cart Content Persistence หลังรีเฟรชห
 # Test Step: หลังจากเพิ่มสินค้าใน Cart, รีเฟรชหน้าเว็บ
 # Expected: รายการสินค้าใน Cart ยังคงอยู่
 
-# 2.1	Display all products	Login และไปที่หน้า Product Page	สินค้าทั้งหมดต้องแสดงถูกต้อง
-# 2.2	Product images load correctly	ตรวจสอบรูปสินค้า	ไม่มีรูปที่โหลดไม่ขึ้น
-# 2.3	Sorting by name (A-Z)	เลือก "Name (A to Z)"	รายการเรียง A-Z
-# 2.4	Sorting by name (Z-A)	เลือก "Name (Z to A)"	รายการเรียง Z-A
-# 2.5	Sorting by price (Low to High)	เลือก "Price (low to high)"	ราคาต่ำสุดอยู่บนสุด
-# 2.6	Sorting by price (High to Low)	เลือก "Price (high to low)"	ราคาแพงสุดอยู่บนสุด
-# 2.7	Clicking product name navigates to details	คลิกชื่อสินค้า	ไปยังหน้า Product Details
-# 2.8	Clicking product image navigates to details	คลิกที่รูปสินค้า	ไปยังหน้า Product Details
-# 2.9	Verify "Add to Cart" button updates	คลิก "Add to Cart"	ปุ่มเปลี่ยนเป็น "Remove"
-# 2.10	Verify product descriptions	ตรวจสอบรายละเอียดสินค้า	ข้อมูลครบถ้วน
+TC_PRODUCT_PAGE_010 - Clicking product name navigates to details
+    Login    ${standard_user}    ${password}
+# คลิกชื่อสินค้า	ไปยังหน้า Product Details
 
-    # Shopping 
-# 3.1	Add multiple products	เพิ่มสินค้าหลายรายการ	Cart ต้องอัปเดต
-# 3.2	Remove product from cart	ลบสินค้าจาก Cart	ต้องหายไปจาก Cart
-# 3.3	Empty cart message	ลบสินค้าทั้งหมด	แสดงข้อความ "Your cart is empty"
-# 3.4	Cart retains items after refresh	เพิ่มสินค้า > รีเฟรช	สินค้าต้องยังอยู่
-# 3.5	Cart updates correctly	เพิ่มและลบสินค้า	จำนวนสินค้าต้องถูกต้อง
-# 3.6	Navigate to checkout page	ไปที่ Cart > คลิก "Checkout"	ไปยังหน้า Checkout
-# 3.7	Verify cart item details	ตรวจสอบข้อมูลใน Cart	ชื่อ, ราคา, จำนวน ถูกต้อง
-# 3.8	Verify cart icon updates	เพิ่มสินค้า	ไอคอน Cart อัปเดตตามจำนวนสินค้า
-# 3.9	Verify cart items persist after logout	เพิ่มสินค้า > Logout > Login ใหม่	ควรยังมีสินค้าอยู่
-# 3.10	Verify max quantity of items in cart	เพิ่มสินค้าจนถึงจำนวนสูงสุด	ระบบควรแจ้งเตือนถ้ามีลิมิต
+TC_PRODUCT_PAGE_011 - Clicking product image navigates to details
+    Login    ${standard_user}    ${password}
+# คลิกชื่อสินค้า	ไปยังหน้า Product Details
+
+TC_PRODUCT_PAGE_012 - Verify "Add to Cart" button updates	
+    Login    ${standard_user}    ${password}
+# ปุ่มเปลี่ยนเป็น "Remove"
+
+TC_PRODUCT_PAGE_013 - Add multiple products เพิ่มสินค้าหลายรายการ
+    Login    ${standard_user}    ${password}
+# Cart ต้องอัปเดต
+
+TC_PRODUCT_PAGE_014 - Remove product from cart ลบสินค้าจาก Cart
+    Login    ${standard_user}    ${password}
+# ลบสินค้าจาก Cart	ต้องหายไปจาก Cart
+
+TC_PRODUCT_PAGE_015 - Empty cart message
+    Login    ${standard_user}    ${password}
+# ลบสินค้าทั้งหมด	แสดงข้อความ "Your cart is empty"
+
+TC_PRODUCT_PAGE_016 - Cart retains items after refresh
+    Login    ${standard_user}    ${password}
+# เพิ่มสินค้า > รีเฟรช	สินค้าต้องยังอยู่
+
+TC_PRODUCT_PAGE_017 - Verify cart items persist after logout
+    Login    ${standard_user}    ${password}
+# เพิ่มสินค้า > Logout > Login ใหม่	ควรยังมีสินค้าอยู่
+
+TC_PRODUCT_PAGE_018 - Verify max quantity of items in cart
+    Login    ${standard_user}    ${password}
+# เพิ่มสินค้าจนถึงจำนวนสูงสุด	ระบบควรแจ้งเตือนถ้ามีลิมิต
+
 
 TC_CHECKOUT_001 - เริ่มต้นการ Checkout
     Login    ${standard_user}    ${password}
@@ -277,16 +290,45 @@ TC_CHECKOUT_007 - Verify URL Changes ระหว่างขั้นตอน 
 # Test Step: ตรวจสอบ URL เมื่อเปลี่ยนจาก “Checkout: Your Information” ไปยัง “Checkout: Overview” และ “Checkout Complete”
 # Expected: URL เปลี่ยนแสดงสถานะขั้นตอน (เช่น /checkout-step-one.html, /checkout-step-two.html, /checkout-complete.html)
 
-# 4.1	Successful checkout	กรอกข้อมูลถูกต้อง	ไปยัง Order Confirmation
-# 4.2	Missing first name	ไม่กรอก First Name	ระบบแจ้งเตือน
-# 4.3	Missing last name	ไม่กรอก Last Name	ระบบแจ้งเตือน
-# 4.4	Missing ZIP code	ไม่กรอก ZIP	ระบบแจ้งเตือน
-# 4.5	Checkout cancellation	คลิก "Cancel"	กลับไปที่ Cart
-# 4.6	Verify order summary before confirming	ตรวจสอบรายการสินค้า	รายละเอียดถูกต้อง
-# 4.7	Verify "Finish" button completes order	คลิก "Finish"	แสดง "Thank you for your order"
-# 4.8	Verify order reset after completion	Checkout สำเร็จ > กลับไปหน้า Home	Cart ว่างเปล่า
-# 4.9	Verify order history (if applicable)	ตรวจสอบคำสั่งซื้อที่ทำเสร็จแล้ว	ต้องมีข้อมูลคำสั่งซื้อ
-# 4.10	Verify payment method selection (if available)	เลือกวิธีจ่ายเงิน	ต้องเลือกได้
+TC_CHECKOUT_008 - Successful checkout
+    Login    ${standard_user}    ${password}
+# กรอกข้อมูลถูกต้อง	ไปยัง Order Confirmation
+
+TC_CHECKOUT_009 - Missing first name
+    Login    ${standard_user}    ${password}
+# ไม่กรอก First Name	ระบบแจ้งเตือน
+
+TC_CHECKOUT_010 - Missing last name
+    Login    ${standard_user}    ${password}
+# ไม่กรอก Last Name	ระบบแจ้งเตือน
+
+TC_CHECKOUT_011 - Missing ZIP code
+    Login    ${standard_user}    ${password}
+# ไม่กรอก ZIP	ระบบแจ้งเตือน
+
+TC_CHECKOUT_012 - Checkout cancellation
+    Login    ${standard_user}    ${password}
+# คลิก "Cancel"	กลับไปที่ Cart
+
+TC_CHECKOUT_013 - Verify order summary before confirming
+    Login    ${standard_user}    ${password}
+# ตรวจสอบรายการสินค้า	รายละเอียดถูกต้อง
+
+TC_CHECKOUT_014 - Verify "Finish" button completes order
+    Login    ${standard_user}    ${password}
+# คลิก "Finish"	แสดง "Thank you for your order"
+
+TC_CHECKOUT_015 - Verify order reset after completion Checkout
+    Login    ${standard_user}    ${password}
+# Checkout สำเร็จ > กลับไปหน้า Home	Cart ว่างเปล่า
+
+TC_CHECKOUT_016 - Verify order history (if applicable)
+    Login    ${standard_user}    ${password}
+# ตรวจสอบคำสั่งซื้อที่ทำเสร็จแล้ว ต้องมีข้อมูลคำสั่งซื้อ
+
+TC_CHECKOUT_017 - Verify payment method selection (if available)
+    Login    ${standard_user}    ${password}
+# เลือกวิธีจ่ายเงิน	ต้องเลือกได้
 
 TC_BURGER _001 - Logout ผ่าน Burger Menu
     Login    ${standard_user}    ${password}
