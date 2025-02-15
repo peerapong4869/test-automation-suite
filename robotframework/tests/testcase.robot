@@ -1,8 +1,8 @@
 *** Settings ***
 Library    SeleniumLibrary
 Library    Screenshot
-Suite Setup    Open Web
-Suite Teardown    Close Browser
+Test Setup    Open Web
+Test Teardown    Close Browser
 
 *** Variables ***
 ${standard_user}                    standard_user
