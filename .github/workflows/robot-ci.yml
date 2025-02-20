@@ -1,4 +1,4 @@
-name: Run Robot Framework Tests
+name: Run All Tests
 
 on:
   push:
@@ -7,80 +7,162 @@ on:
   pull_request:
 
 jobs:
-  test:
+  # ------------------------------------------------
+  # 1) Robot Framework Tests
+  # ------------------------------------------------
+  robot-tests:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-    - name: Install Dependencies
-      run: |
-        pip install --upgrade pip
-        pip install -r robotframework/requirements.txt
+      - name: Install Robot Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r robotframework/requirements.txt
 
-    - name: Run Robot Framework Tests
-      run: robot --outputdir results robotframework/tests/
+      - name: Run Robot Framework Tests
+        run: |
+          robot --outputdir results robotframework/tests/
 
-    - name: Extract Test Summary
-      run: |
-        sudo apt-get install -y libxml2-utils  # ติดตั้ง xmllint (เฉพาะ Linux)
-        PASSED=$(xmllint --xpath "string(//statistics/total/stat[@pass]/@pass)" results/output.xml || echo "0")
-        FAILED=$(xmllint --xpath "string(//statistics/total/stat[@fail]/@fail)" results/output.xml || echo "0")
-        SKIPPED=$(xmllint --xpath "string(//statistics/total/stat[@skip]/@skip)" results/output.xml || echo "0")
-        echo "PASSED=$PASSED" >> $GITHUB_ENV
-        echo "FAILED=$FAILED" >> $GITHUB_ENV
-        echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
+      - name: Extract Test Summary
+        run: |
+          sudo apt-get install -y libxml2-utils  # สำหรับใช้ xmllint
+          PASSED=$(xmllint --xpath "string(//statistics/total/stat[@pass]/@pass)" results/output.xml || echo "0")
+          FAILED=$(xmllint --xpath "string(//statistics/total/stat[@fail]/@fail)" results/output.xml || echo "0")
+          SKIPPED=$(xmllint --xpath "string(//statistics/total/stat[@skip]/@skip)" results/output.xml || echo "0")
+          echo "PASSED=$PASSED" >> $GITHUB_ENV
+          echo "FAILED=$FAILED" >> $GITHUB_ENV
+          echo "SKIPPED=$SKIPPED" >> $GITHUB_ENV
 
+      - name: Upload Robot Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-test-results
+          path: results/
 
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: robot-test-results
-        path: results/
-
-    - name: Send notification to Slack
-      if: always()
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-        SLACK_USERNAME: "GitHub Actions 🤖"
-        SLACK_ICON_EMOJI: ":robot_face:"
-        SLACK_PAYLOAD: >-
-          {
-            "blocks": [
-              {
-                "type": "header",
-                "text": {
-                  "type": "plain_text",
-                  "text": "🚀 Robot Framework Test Results",
-                  "emoji": true
-                }
-              },
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": ":robot_face: *Workflow:* `${{ github.workflow }}`\n📌 *Status:* `${{ job.status }}`\n🔗 *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|`${{ github.sha }}`>\n📂 *Repository:* `${{ github.repository }}`\n\n✅ *Passed:* `${{ env.PASSED }}`\n❌ *Failed:* `${{ env.FAILED }}`\n⚠️ *Skipped:* `${{ env.SKIPPED }}`"
-                }
-              },
-              {
-                "type": "divider"
-              },
-              {
-                "type": "context",
-                "elements": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "🕒 *Triggered by:* `${{ github.actor }}`  |  🖥 *Branch:* `${{ github.ref }}`"
+      - name: Send notification to Slack (Robot)
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: "GitHub Actions 🤖"
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_PAYLOAD: >-
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🚀 Robot Framework Test Results",
+                    "emoji": true
                   }
-                ]
-              }
-            ]
-          }
-        SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":robot_face: *Workflow:* `${{ github.workflow }}`\n📌 *Status:* `${{ job.status }}`\n🔗 *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|`${{ github.sha }}`>\n📂 *Repository:* `${{ github.repository }}`\n\n✅ *Passed:* `${{ env.PASSED }}`\n❌ *Failed:* `${{ env.FAILED }}`\n⚠️ *Skipped:* `${{ env.SKIPPED }}`"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "🕒 *Triggered by:* `${{ github.actor }}`  |  🖥 *Branch:* `${{ github.ref }}`"
+                    }
+                  ]
+                }
+              ]
+            }
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+
+  # ------------------------------------------------
+  # 2) Cypress Tests
+  # ------------------------------------------------
+  cypress-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Cypress Dependencies
+        run: |
+          cd cypress
+          npm install
+
+      - name: Run Cypress Tests
+        run: |
+          cd cypress
+          npx cypress run
+
+      - name: Upload Cypress Test Results (ถ้ามีการ generate results ไว้)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-test-results
+          path: cypress/results/
+
+      - name: Send notification to Slack (Cypress)
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: "GitHub Actions 🤖"
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_PAYLOAD: '{"text":"Cypress tests finished with status `${{ job.status }}`"}'
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+
+  # ------------------------------------------------
+  # 3) Playwright Tests
+  # ------------------------------------------------
+  playwright-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Playwright Dependencies
+        run: |
+          cd playwright
+          npm install
+
+      - name: Run Playwright Tests
+        run: |
+          cd playwright
+          npx playwright test
+
+      - name: Upload Playwright Test Results (ถ้ามี)
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: playwright/test-results/
+
+      - name: Send notification to Slack (Playwright)
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: "GitHub Actions 🤖"
+          SLACK_ICON_EMOJI: ":robot_face:"
+          SLACK_PAYLOAD: '{"text":"Playwright tests finished with status `${{ job.status }}`"}'
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
