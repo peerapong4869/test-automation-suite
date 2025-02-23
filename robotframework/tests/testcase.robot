@@ -11,6 +11,8 @@ ${problem_user}                     problem_user
 ${performance_glitch_user}          performance_glitch_user
 ${error_user}                       error_user
 ${visual_user}                      visual_user
+${user_null}                        
+${password_null}                
 ${password}                         secret_sauce
 ${locator_btn_hamberger}            id=react-burger-menu-btn
 ${locator_btn_logout}               id=logout_sidebar_link
@@ -107,28 +109,40 @@ TC-PLP-005 Verify add to cart from product page
 
 #1. การทดสอบหน้า Login
 TC_LOGIN_001 - Valid Login
+    [Tags]    Positive
     [Documentation]    Precondition: ผู้ใช้เปิดหน้า Login ของ SauceDemo
     Login    ${standard_user}    ${password}
 # Test Step: ป้อน username “standard_user”, ป้อน password “secret_sauce”, คลิกปุ่ม Login
 # Expected: นำทางไปที่หน้า Products แสดงรายการสินค้าทั้งหมด
 
 TC_LOGIN_002 - Invalid Login
-    Login    ${standard_user}    ${password}
+    [Tags]    Negative
+    [Documentation]    Precondition: ผู้ใช้เปิดหน้า Login ของ SauceDemo
+    Login    ${standard_user}    1234
 # Test Step: ป้อน username “invalid_user”, ป้อน password “wrong_password”, คลิกปุ่ม Login
 # Expected: แสดงข้อความ error แจ้ง “Username and password do not match any user in this service.”
 
 TC_LOGIN_003 - Login ด้วย Username ว่าง
-    Login    ${standard_user}    ${password}
+    [Tags]    Negative
+    [Documentation]    Precondition: ผู้ใช้เปิดหน้า Login ของ SauceDemo
+    Login    ${user_null}    ${password} 
+    Wait Until Page Contains    Username is required    timeout=5s
 # Test Step: ปล่อยช่อง username ว่าง, ป้อน password “secret_sauce”, คลิกปุ่ม Login
 # Expected: แสดงข้อความ “Username is required”
 
 TC_LOGIN_004 - Login ด้วย Password ว่าง
-    Login    ${standard_user}    ${password}
+    [Tags]    Negative
+    [Documentation]    Precondition: ผู้ใช้เปิดหน้า Login ของ SauceDemo
+    Login    ${user_null}    ${password} 
+    Login    ${standard_user}    ${password_null}
 # Test Step: ป้อน username “standard_user”, ปล่อยช่อง password ว่าง, คลิกปุ่ม Login
 # Expected: แสดงข้อความ “Password is required”
 
 TC_LOGIN_005 - Login with empty Username Password fields
-    Login    ${standard_user}    ${password}
+    [Tags]    Negative
+    [Documentation]    Precondition: ผู้ใช้เปิดหน้า Login ของ SauceDemo
+    Login    ${user_null}    ${password} 
+    Login    ${user_null}    ${password_null}
 # แจ้งเตือนให้กรอก Username/Password
 
 TC_LOGIN_006 - Login with SQL Injection
