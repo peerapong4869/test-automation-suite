@@ -103,7 +103,7 @@ jobs:
 
       - name: Install Cypress Dependencies
         run: |
-          cd cypress
+          cd cypress-project
           npm install
 
       - name: Run Cypress Tests
@@ -143,7 +143,7 @@ jobs:
 
       - name: Install Playwright Dependencies
         run: |
-          cd playwright
+          cd playwright-project
           npm install
 
       - name: Run Playwright Tests
