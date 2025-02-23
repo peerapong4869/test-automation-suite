@@ -108,7 +108,7 @@ jobs:
 
       - name: Run Cypress Tests
         run: |
-          cd cypress
+          cd cypress-project
           npx cypress run
 
       - name: Upload Cypress Test Results (ถ้ามีการ generate results ไว้)
@@ -148,7 +148,7 @@ jobs:
 
       - name: Run Playwright Tests
         run: |
-          cd playwright
+          cd playwright-project
           npx playwright test
 
       - name: Upload Playwright Test Results (ถ้ามี)
